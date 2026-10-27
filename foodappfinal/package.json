@@ -1,0 +1,13 @@
+{
+  "name": "food-ordering-microservices",
+  "version": "2.0.0",
+  "description": "Hệ thống đặt đồ ăn trực tuyến theo kiến trúc microservices (User, Food, Order, Payment giả lập, Notification)",
+  "private": true,
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node start.js",
+    "test": "node --no-warnings test.js",
+    "seed": "node --no-warnings seed.js",
+    "reset-db": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\""
+  }
+}

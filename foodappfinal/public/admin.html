@@ -1,0 +1,234 @@
+<!doctype html>
+<!-- Đường dẫn: foodapp/public/admin.html -->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2b2118">
+  <title>Quản trị – ĂnNgon</title>
+  <script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('theme'))||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}catch(e){}</script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="admin">
+  <header class="topbar">
+    <a class="brand" href="/admin.html">🍜 <span>ĂnNgon</span> <small class="tag" id="roleTag">Quản trị</small></a>
+    <div class="tools">
+      <div id="bell" class="bell" hidden>
+        <button class="icon-btn" data-bell="toggle" aria-label="Thông báo">🔔<span class="bell-count" hidden>0</span></button>
+        <div class="bell-panel" hidden></div>
+      </div>
+      <span id="userArea" class="user-area"></span>
+      <a class="link" href="/">Cửa hàng ↗</a>
+    </div>
+  </header>
+
+  <div class="shell">
+  <aside class="side">
+    <nav class="side-nav" id="adminNav" hidden aria-label="Menu quản trị">
+    <button class="link" data-tab="dashboard">📊 Tổng quan</button>
+    <button class="link" data-tab="orders">🧾 Đơn hàng</button>
+    <button class="link" data-tab="foods">🍲 Món ăn</button>
+    <button class="link" data-tab="coupons">🏷️ Mã giảm giá</button>
+    <button class="link" data-tab="qr">📱 Mã QR</button>
+    <button class="link" data-tab="users">👥 Người dùng</button>
+  </nav>
+  </aside>
+
+  <main>
+    <!-- Đăng nhập quản trị (toàn màn hình, nền động) -->
+    <section id="loginPanel" class="auth-screen admin-auth" hidden>
+      <aside class="auth-side">
+      <div class="auth-bg" aria-hidden="true"></div>
+      <div class="auth-side-in">
+        <a class="auth-brand" href="/">🍜 <b>ĂnNgon</b></a>
+        <div class="orbit" aria-hidden="true"><span class="core">🍜</span><span class="o" style="--a:0deg">🍕</span><span class="o" style="--a:72deg">🧋</span><span class="o" style="--a:144deg">🍣</span><span class="o" style="--a:216deg">🥗</span><span class="o" style="--a:288deg">🍰</span></div>
+        <h1>Quản lý quán thật dễ</h1>
+        <p>Một nơi cho đơn hàng, món ăn và doanh thu.</p>
+        <ul class="auth-points"><li><span>📊</span>Doanh thu theo ngày</li><li><span>🧾</span>Xử lý đơn từng bước</li><li><span>📦</span>Quản lý món và tồn kho</li></ul>
+      </div>
+    </aside>
+      <div class="auth-main">
+      <a class="auth-close" href="/">← Về cửa hàng</a>
+      <form id="loginForm" class="auth-card">
+        <h2>Quản trị ĂnNgon</h2>
+        <p class="auth-sub" id="loginHint">Dành cho nhân viên và quản trị viên.</p>
+        <label>Email <span class="field"><i aria-hidden="true">✉️</i><input name="email" type="email" required autocomplete="email" placeholder="admin@anngon.vn"></span></label>
+        <label>Mật khẩu <span class="field"><i aria-hidden="true">🔒</i><input name="password" type="password" required autocomplete="current-password" placeholder="••••••"><button type="button" class="eye" data-eye aria-label="Hiện/ẩn mật khẩu">👁</button></span></label>
+        <div class="auth-row">
+          <label class="check"><input type="checkbox" name="remember" checked> Ghi nhớ 7 ngày</label>
+          <button type="button" class="auth-link" data-forgot>Quên mật khẩu?</button>
+        </div>
+        <p class="error" id="loginError"></p>
+        <button type="submit" class="auth-btn">Đăng nhập</button>
+        <details class="auth-demo" open><summary>🔑 Tài khoản demo</summary><div id="demoBox"></div></details>
+      </form>
+      </div>
+    </section>
+
+    <!-- Tổng quan -->
+    <section data-panel="dashboard" hidden>
+      <div class="welcome"><div><h2 id="greet">Xin chào 👋</h2><p class="muted small" id="today"></p></div></div>
+      <div class="row wrap">
+        <h3>Doanh thu</h3>
+        <div class="seg" role="group" aria-label="Khoảng thời gian">
+          <button data-days="7" class="active">7 ngày</button><button data-days="30">30 ngày</button><button data-days="90">90 ngày</button>
+        </div>
+      </div>
+      <div id="kpis" class="kpis"></div>
+      <div class="panel">
+        <h3>Doanh thu theo ngày</h3>
+        <div id="revenueChart" class="chart"></div>
+        <details><summary class="small">Xem dạng bảng</summary><div id="revenueTable" class="table-wrap"></div></details>
+      </div>
+      <div class="two-col">
+        <div class="panel"><h3>Món bán chạy</h3><div id="topFoods"></div></div>
+        <div class="panel"><h3>Đơn hàng theo trạng thái</h3><div id="statusBreakdown"></div>
+          <h3>Theo phương thức thanh toán</h3><div id="methodBreakdown"></div></div>
+      </div>
+      <div class="panel">
+        <h3>Xuất báo cáo doanh thu</h3>
+        <form id="reportForm" class="toolbar">
+          <label>Từ ngày <input type="date" name="from" required></label>
+          <label>Đến ngày <input type="date" name="to" required></label>
+          <button class="primary" type="submit">⬇ Tải file CSV (Excel)</button>
+        </form>
+        <p class="muted small">File gồm danh sách đơn, tổng hợp doanh thu và doanh thu theo ngày; mở trực tiếp bằng Excel.</p>
+      </div>
+    </section>
+
+    <!-- Đơn hàng -->
+    <section data-panel="orders" hidden>
+      <div class="row wrap"><h2>Xử lý đơn hàng</h2><button class="ghost" data-action="reload-orders">↻ Làm mới</button></div>
+      <div id="orderSummary" class="kpis order-summary"></div>
+      <div class="toolbar">
+        <select id="oStatus" aria-label="Lọc trạng thái">
+          <option value="ACTIVE">Đang xử lý</option>
+          <option value="">Tất cả</option>
+          <option value="PENDING">Chờ thanh toán</option>
+          <option value="CONFIRMED">Đã xác nhận</option>
+          <option value="PREPARING">Đang chuẩn bị</option>
+          <option value="DELIVERING">Đang giao</option>
+          <option value="COMPLETED">Hoàn thành</option>
+          <option value="CANCELLED">Đã huỷ</option>
+        </select>
+        <input type="search" id="oSearch" placeholder="Tìm mã đơn, tên khách, SĐT" aria-label="Tìm đơn">
+      </div>
+      <div id="adminOrders" class="order-board"></div>
+    </section>
+
+    <!-- Món ăn -->
+    <section data-panel="foods" hidden>
+      <div class="row wrap"><h2>Quản lý món ăn & tồn kho</h2><button class="primary" data-action="new-food" data-roles="ADMIN">+ Thêm món</button></div>
+      <div class="toolbar">
+        <input type="search" id="fSearch" placeholder="Tìm món" aria-label="Tìm món">
+        <label class="check"><input type="checkbox" id="fLow"> Sắp hết (≤ 5)</label>
+      </div>
+      <div class="table-wrap"><table class="table" id="foodTable"></table></div>
+    </section>
+
+    <!-- Mã giảm giá -->
+    <section data-panel="coupons" hidden>
+      <h2>Mã giảm giá</h2>
+      <form id="couponForm" class="panel form-grid">
+        <label>Mã <input name="code" required pattern="[A-Za-z0-9]{3,20}" placeholder="VD: GIAM20"></label>
+        <label>Loại
+          <select name="type"><option value="PERCENT">Giảm theo %</option><option value="FIXED">Giảm số tiền</option></select>
+        </label>
+        <label>Giá trị <input name="value" type="number" min="1" required placeholder="10 (%) hoặc 20000 (₫)"></label>
+        <label>Đơn tối thiểu (₫) <input name="minOrder" type="number" min="0" placeholder="0"></label>
+        <label>Giảm tối đa (₫) <input name="maxDiscount" type="number" min="1" placeholder="Không giới hạn"></label>
+        <label>Số lượt dùng <input name="usageLimit" type="number" min="1" placeholder="Không giới hạn"></label>
+        <label>Hết hạn sau ngày <input name="expiresAt" type="date"></label>
+        <label class="span2">Mô tả <input name="description" maxlength="200" placeholder="Hiển thị cho khách, VD: Giảm 20% cho đơn từ 100.000đ"></label>
+        <p class="error span2" id="couponError"></p>
+        <button class="primary" type="submit">+ Tạo mã</button>
+      </form>
+      <div class="table-wrap"><table class="table" id="couponTable"></table></div>
+    </section>
+
+    <!-- Mã QR vào trang đặt hàng -->
+    <section data-panel="qr" hidden>
+      <h2>Mã QR vào trang đặt hàng</h2>
+      <p class="muted small no-print">In mã này lên tờ rơi, hộp đựng, standee… Khách quét bằng camera điện thoại sẽ mở thẳng trang thực đơn để đặt món giao tận nơi.</p>
+      <form id="qrForm" class="toolbar no-print">
+        <label>Địa chỉ website <input name="base" required list="baseList" autocomplete="off"></label>
+        <datalist id="baseList"></datalist>
+        <button class="primary" type="submit">Tạo mã QR</button>
+        <button class="ghost" type="button" data-action="print">🖨 In</button>
+      </form>
+      <p id="qrWarn" class="note no-print" hidden>⚠️ Địa chỉ đang là <b>localhost</b> — điện thoại quét sẽ không mở được. Hãy chọn IP mạng LAN (VD: http://192.168.1.10:3000) và cho điện thoại kết nối cùng Wi-Fi.</p>
+      <div class="qr-poster">
+        <div id="qrCode"></div>
+        <strong>🍜 ĂnNgon</strong>
+        <span>Quét mã để đặt món — giao tận nơi trong 30 phút</span>
+        <small id="qrUrl" class="muted"></small>
+      </div>
+    </section>
+
+    <!-- Người dùng -->
+    <section data-panel="users" hidden>
+      <h2>Người dùng & phân quyền</h2>
+      <div class="panel">
+        <h3>Phân quyền</h3>
+        <div class="table-wrap"><table class="table compact perm-table">
+          <tr><th>Chức năng</th><th>Khách hàng</th><th>Nhân viên</th><th>Quản trị viên</th></tr>
+          <tr><td>Xem thực đơn, đặt món, thanh toán, đánh giá, theo dõi đơn</td><td>✔</td><td>✔</td><td>✔</td></tr>
+          <tr><td>Vào trang quản trị, nhận thông báo đơn mới</td><td></td><td>✔</td><td>✔</td></tr>
+          <tr><td>Xử lý đơn hàng (chuẩn bị → giao → hoàn thành, huỷ)</td><td></td><td>✔</td><td>✔</td></tr>
+          <tr><td>Cập nhật số lượng còn của món</td><td></td><td>✔</td><td>✔</td></tr>
+          <tr><td>Thêm / sửa / ẩn món, đổi giá, đổi ảnh</td><td></td><td></td><td>✔</td></tr>
+          <tr><td>Xem doanh thu (Tổng quan), xuất báo cáo</td><td></td><td></td><td>✔</td></tr>
+          <tr><td>Mã giảm giá, mã QR</td><td></td><td></td><td>✔</td></tr>
+          <tr><td>Tạo tài khoản, đổi vai trò</td><td></td><td></td><td>✔</td></tr>
+        </table></div>
+        <p class="muted small">Quyền được kiểm tra ở server cho mọi thao tác. Vai trò mới có hiệu lực khi người dùng đăng nhập lại.</p>
+      </div>
+      <form id="newUserForm" class="panel form-grid">
+        <h3 class="span2">Tạo tài khoản (nhân viên mới…)</h3>
+        <label>Họ tên <input name="name" required minlength="2" maxlength="50"></label>
+        <label>Email <input name="email" type="email" required></label>
+        <label>Số điện thoại <input name="phone" type="tel" placeholder="Không bắt buộc"></label>
+        <label>Mật khẩu tạm <input name="password" type="text" required minlength="6" autocomplete="off"></label>
+        <label>Vai trò
+          <select name="role"><option value="STAFF" selected>Nhân viên</option><option value="ADMIN">Quản trị viên</option><option value="GUEST">Khách hàng</option></select>
+        </label>
+        <p class="error span2" id="newUserError"></p>
+        <button class="primary" type="submit">+ Tạo tài khoản</button>
+      </form>
+      <div id="roleSummary" class="role-summary"></div>
+      <div class="table-wrap"><table class="table" id="userTable"></table></div>
+    </section>
+  </main>
+  </div>
+
+  <!-- Thêm / sửa món -->
+  <dialog id="foodDialog">
+    <form id="foodForm" method="dialog" class="form-grid">
+      <h2 class="span2" id="foodFormTitle">Thêm món</h2>
+      <label class="span2">Tên món <input name="name" required minlength="2" maxlength="80"></label>
+      <label>Danh mục <select name="categoryId" id="catSelect"></select></label>
+      <label>Giá (₫) <input name="price" type="number" min="1000" step="1000" required></label>
+      <label>Số lượng còn <input name="stock" type="number" min="0" required></label>
+      <div class="span2 img-field">
+        <span class="thumb big" id="imgPreview" aria-hidden="true"></span>
+        <div>
+          <label>Ảnh món — chọn ảnh từ máy <input type="file" id="imgFile" accept="image/jpeg,image/png,image/webp"></label>
+          <label>…hoặc dùng emoji / link ảnh <input name="image" placeholder="🍜 hoặc https://..."></label>
+        </div>
+      </div>
+      <label class="span2">Mô tả <input name="description" maxlength="300"></label>
+      <label class="check span2"><input type="checkbox" name="active" checked> Đang bán (hiện trên thực đơn)</label>
+      <p class="error span2" id="foodError"></p>
+      <div class="actions span2">
+        <button type="button" class="ghost" data-action="close-dialog">Huỷ</button>
+        <button type="submit" class="primary">Lưu</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="/vendor/qrcode.js"></script>
+  <script src="/common.js"></script>
+  <script src="/admin.js"></script>
+</body>
+</html>

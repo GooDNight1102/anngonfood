@@ -1,0 +1,11 @@
+{
+  "secret": "doi-chuoi-nay-khi-trien-khai-that",
+  "services": {
+    "gateway": 3000,
+    "user": 4001,
+    "food": 4002,
+    "order": 4003,
+    "payment": 4004,
+    "notification": 4005
+  }
+}
